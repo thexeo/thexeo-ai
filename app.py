@@ -59,7 +59,7 @@ def send_email(data):
     msg.set_content(str(data))
     msg['Subject'] = 'Worker Data'
     msg['From'] = os.environ['MAIL_USERNAME']
-    msg['To'] = 'your_email@example.com'
+    msg['To'] = 'thexeo@thexeo.com'
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(os.environ['MAIL_USERNAME'], os.environ['MAIL_PASSWORD'])
