@@ -24,14 +24,11 @@ def gpu_calculate_rate():
     return rate
 
 def fetch_visitors_from_thexeo():
-    # This is a mock function. In reality, you would need to find or implement a way to get visitor data from Google Analytics
-    # Here's a simple example using BeautifulSoup to fetch some data from the website (not actual GA data)
     url = "https://thexeo.com"
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     
     # Mock data since real-time GA data isn't directly accessible via scraping
-    # You would need to authenticate and use Google Analytics API for real data
     total_visitors = 0  # Here you might parse out a number from the page or get it from GA API
     for script in soup.find_all('script'):
         if 'google-analytics.com' in script.get('src', ''):
@@ -40,7 +37,7 @@ def fetch_visitors_from_thexeo():
 
     return total_visitors
 
-def insert_to_db(rate, visitors):
+def create_and_insert_to_db(rate, visitors):
     conn = mysql.connector.connect(
         host="db",
         user=os.environ['MYSQL_USER'],
@@ -48,8 +45,21 @@ def insert_to_db(rate, visitors):
         database=os.environ['MYSQL_DATABASE']
     )
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO worker (id, workeruser, rate, visitors) VALUES (%s, %s, %s, %s)", 
-                   (None, 'exampleuser', rate, visitors))  # id otomatik artacak
+
+    # Create table if not exists
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS worker (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        workeruser VARCHAR(255),
+        rate FLOAT,
+        visitors INT
+    )
+    """)
+
+    # Insert data
+    cursor.execute("INSERT INTO worker (workeruser, rate, visitors) VALUES (%s, %s, %s)", 
+                   ('exampleuser', rate, visitors))
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -59,7 +69,7 @@ def send_email(data):
     msg.set_content(str(data))
     msg['Subject'] = 'Worker Data'
     msg['From'] = os.environ['MAIL_USERNAME']
-    msg['To'] = 'thexeo@thexeo.com'
+    msg['To'] = 'your_email@example.com'
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(os.environ['MAIL_USERNAME'], os.environ['MAIL_PASSWORD'])
@@ -68,7 +78,7 @@ def send_email(data):
 if __name__ == "__main__":
     rate = gpu_calculate_rate()
     visitors = fetch_visitors_from_thexeo()
-    insert_to_db(rate, visitors)
+    create_and_insert_to_db(rate, visitors)
     conn = mysql.connector.connect(
         host="db",
         user=os.environ['MYSQL_USER'],
