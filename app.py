@@ -25,7 +25,7 @@ def gpu_calculate_rate():
         x = x * torch.pi
 
     # Generate a rate value from this calculation (example)
-    rate = x.item() / 10000000  
+    rate = x.item() / 10000000 if x.item() != 0 else 0  # or some other default value
     return rate
 
 def fetch_visitors_from_thexeo():
@@ -69,7 +69,8 @@ def insert_to_db(rate, visitors):
         )
         cursor = conn.cursor()
         cursor.execute("INSERT INTO worker (workeruser, rate, visitors) VALUES (%s, %s, %s)", 
-                       ('exampleuser', rate, visitors))
+               ('exampleuser', rate, visitors))
+
         conn.commit()
         print("Data inserted successfully")
     except Error as e:
