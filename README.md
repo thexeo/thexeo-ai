@@ -1,4 +1,4 @@
-# Thexeo AI Project
+# Thexeo AI Project Worker
 
 This project leverages parallel processing with GPU capabilities to efficiently gather and manage data relevant to digital marketing and SEO for our clients.
 
