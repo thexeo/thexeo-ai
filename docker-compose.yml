@@ -3,8 +3,8 @@ services:
   db:
     image: mysql:5.7
     environment:
-      MYSQL_ROOT_PASSWORD: yourpassword  # This should match what's in app.py
-      MYSQL_DATABASE: thexeoai  # New database name
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: thexeoai  # Matches the database name in app.py
     volumes:
       - dbdata:/var/lib/mysql
 
@@ -13,10 +13,8 @@ services:
     environment:
       - MYSQL_HOST=db
       - MYSQL_USER=root
-      - MYSQL_PASSWORD=yourpassword
-      - MYSQL_DB=thexeoai  # Updated to match the new database name
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DB=thexeoai  # Matches the database name in app.py
     depends_on:
       - db
 
