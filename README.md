@@ -22,7 +22,6 @@ This project leverages parallel processing with GPU capabilities to efficiently 
 - **GPU-Accelerated Computations:** Performs calculations using CUDA-enabled GPUs for faster processing.
 - **SEO and Digital Marketing Data:** Collects visitor data from `thexeo.com` to analyze website performance.
 - **Database Integration:** Automatically inserts processed data into a MySQL database for storage and retrieval.
-- **Email Reporting:** Sends periodic emails with the latest data to keep clients informed.
 
 ## Prerequisites
 
