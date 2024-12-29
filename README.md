@@ -56,7 +56,6 @@ The application will:
 Collect visitor data from thexeo.com.
 Perform GPU-accelerated rate calculations.
 Store this data in MySQL under the worker table.
-Send an email report with the collected data.
 
 Environment Variables
 MYSQL_ROOT_PASSWORD
