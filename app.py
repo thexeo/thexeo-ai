@@ -1,10 +1,14 @@
 import os
 import mysql.connector
+from mysql.connector import Error
 from email.message import EmailMessage
 import smtplib
 import torch
 import requests
 from bs4 import BeautifulSoup
+
+# Connection string assuming MySQL is running locally or on the same network
+connection_string = "mysql://root:yourpassword@db:3306/"  # Adjust 'yourpassword' accordingly
 
 def gpu_calculate_rate():
     if torch.cuda.is_available():
@@ -20,7 +24,7 @@ def gpu_calculate_rate():
         x = x * torch.pi
 
     # Bu hesaplama sonucundan bir rate değeri üretelim (örnek olarak)
-    rate = x.item() / 10000000  # Bu sadece bir örnek, gerçek kullanımda rate hesaplama algoritmanız olacak
+    rate = x.item() / 10000000  
     return rate
 
 def fetch_visitors_from_thexeo():
@@ -28,41 +32,62 @@ def fetch_visitors_from_thexeo():
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    # Mock data since real-time GA data isn't directly accessible via scraping
-    total_visitors = 0  # Here you might parse out a number from the page or get it from GA API
+    total_visitors = 0  
     for script in soup.find_all('script'):
         if 'google-analytics.com' in script.get('src', ''):
-            # Example: Parsing some data from GA script - this is extremely simplified
-            total_visitors += 100  # Mocking actual visitor count
+            total_visitors += 100  
 
     return total_visitors
 
-def create_and_insert_to_db(rate, visitors):
-    conn = mysql.connector.connect(
-        host="db",
-        user=os.environ['MYSQL_USER'],
-        password=os.environ['MYSQL_PASSWORD'],
-        database=os.environ['MYSQL_DATABASE']
-    )
-    cursor = conn.cursor()
+def create_database_and_table():
+    try:
+        conn = mysql.connector.connect(
+            host="db",
+            user="root",
+            password="yourpassword"
+        )
+        cursor = conn.cursor()
+        
+        # Create database
+        cursor.execute("CREATE DATABASE IF NOT EXISTS thexeoai")
+        cursor.execute("USE thexeoai")
+        
+        # Create table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS worker (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            workeruser VARCHAR(255),
+            rate FLOAT,
+            visitors INT
+        )
+        """)
+        print("Database and table created successfully")
+    except Error as e:
+        print(f"Error creating database or table: {e}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
-    # Create table if not exists
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS worker (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        workeruser VARCHAR(255),
-        rate FLOAT,
-        visitors INT
-    )
-    """)
-
-    # Insert data
-    cursor.execute("INSERT INTO worker (workeruser, rate, visitors) VALUES (%s, %s, %s)", 
-                   ('exampleuser', rate, visitors))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+def insert_to_db(rate, visitors):
+    try:
+        conn = mysql.connector.connect(
+            host="db",
+            user="root",
+            password="yourpassword",
+            database="thexeoai"
+        )
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO worker (workeruser, rate, visitors) VALUES (%s, %s, %s)", 
+                       ('exampleuser', rate, visitors))
+        conn.commit()
+        print("Data inserted successfully")
+    except Error as e:
+        print(f"Error inserting data: {e}")
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
 
 def send_email(data):
     msg = EmailMessage()
@@ -76,14 +101,15 @@ def send_email(data):
         smtp.send_message(msg)
 
 if __name__ == "__main__":
+    create_database_and_table()
     rate = gpu_calculate_rate()
     visitors = fetch_visitors_from_thexeo()
-    create_and_insert_to_db(rate, visitors)
+    insert_to_db(rate, visitors)
     conn = mysql.connector.connect(
         host="db",
-        user=os.environ['MYSQL_USER'],
-        password=os.environ['MYSQL_PASSWORD'],
-        database=os.environ['MYSQL_DATABASE']
+        user="root",
+        password="yourpassword",
+        database="thexeoai"
     )
     cursor = conn.cursor()
     cursor.execute("SELECT id, workeruser, rate, visitors FROM worker")
