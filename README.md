@@ -56,17 +56,3 @@ Collect visitor data from thexeo.com.
 Perform GPU-accelerated rate calculations.
 Store this data in MySQL under the worker table.
 
-Environment Variables
-MYSQL_ROOT_PASSWORD
-MYSQL_DATABASE
-MAIL_USERNAME
-MAIL_PASSWORD
-
-Contributing
-Feel free to contribute:
-
-Fork the repo.
-Create your feature branch (git checkout -b feature/FooBar).
-Commit your changes (git commit -am 'Add some FooBar').
-Push to the branch (git push origin feature/FooBar).
-Create a new Pull Request.
