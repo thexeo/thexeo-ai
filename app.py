@@ -9,8 +9,7 @@ from bs4 import BeautifulSoup
 connection_string = "mysql://root:yourpassword@db:3306/"  # Adjust 'yourpassword' accordingly
 
 # WordPress API details
-wp_api_url = "https://thexeo.com/wp-json/custom_api/v1/collect_data"
-wp_api_key = os.environ.get('WP_API_KEY')
+wp_api_url = "https://thexeo.com/wp-json/thexeoai/v1/collectdata"
 
 def gpu_calculate_rate():
     if torch.cuda.is_available():
@@ -20,12 +19,12 @@ def gpu_calculate_rate():
         device = torch.device("cpu")
         print("CUDA is not available. Using CPU.")
 
-    # GPU ile basit bir hesaplama yapalım
+    # Perform a simple calculation using GPU
     x = torch.tensor([1.0], device=device)
-    for _ in range(100000):  # Basit bir döngü ile GPU kullanımı simülasyonu
+    for _ in range(100000):  # Simple loop to simulate GPU usage
         x = x * torch.pi
 
-    # Bu hesaplama sonucundan bir rate değeri üretelim (örnek olarak)
+    # Generate a rate value from this calculation (example)
     rate = x.item() / 10000000  
     return rate
 
@@ -41,7 +40,7 @@ def fetch_visitors_from_thexeo():
 
     return total_visitors
 
-def create_database_and_table():
+def create_database():
     try:
         conn = mysql.connector.connect(
             host="db",
@@ -50,22 +49,11 @@ def create_database_and_table():
         )
         cursor = conn.cursor()
         
-        # Create database
+        # Create database if it doesn't exist
         cursor.execute("CREATE DATABASE IF NOT EXISTS thexeoai")
-        cursor.execute("USE thexeoai")
-        
-        # Create table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS worker (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            workeruser VARCHAR(255),
-            rate FLOAT,
-            visitors INT
-        )
-        """)
-        print("Database and table created successfully")
+        print("Database created successfully")
     except Error as e:
-        print(f"Error creating database or table: {e}")
+        print(f"Error creating database: {e}")
     finally:
         if conn.is_connected():
             cursor.close()
@@ -93,7 +81,6 @@ def insert_to_db(rate, visitors):
 
 def send_data_to_wordpress(data):
     headers = {
-        'Authorization': f'Bearer {wp_api_key}',  # Assuming Bearer token authentication
         'Content-Type': 'application/json'
     }
     
@@ -109,7 +96,8 @@ def send_data_to_wordpress(data):
         print(f"Error sending data to WordPress: {e}")
 
 if __name__ == "__main__":
-    create_database_and_table()
+    create_database()
+    
     rate = gpu_calculate_rate()
     visitors = fetch_visitors_from_thexeo()
     insert_to_db(rate, visitors)
