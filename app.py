@@ -1,14 +1,16 @@
 import os
 import mysql.connector
 from mysql.connector import Error
-from email.message import EmailMessage
-import smtplib
-import torch
 import requests
+import torch
 from bs4 import BeautifulSoup
 
-# Connection string assuming MySQL is running locally or on the same network
+# Connection string for MySQL
 connection_string = "mysql://root:yourpassword@db:3306/"  # Adjust 'yourpassword' accordingly
+
+# WordPress API details
+wp_api_url = "https://thexeo.com/wp-json/custom_api/v1/collect_data"
+wp_api_key = os.environ.get('WP_API_KEY')
 
 def gpu_calculate_rate():
     if torch.cuda.is_available():
@@ -35,7 +37,7 @@ def fetch_visitors_from_thexeo():
     total_visitors = 0  
     for script in soup.find_all('script'):
         if 'google-analytics.com' in script.get('src', ''):
-            total_visitors += 100  
+            total_visitors += 100  # Mocking actual visitor count
 
     return total_visitors
 
@@ -89,22 +91,29 @@ def insert_to_db(rate, visitors):
             cursor.close()
             conn.close()
 
-def send_email(data):
-    msg = EmailMessage()
-    msg.set_content(str(data))
-    msg['Subject'] = 'Worker Data'
-    msg['From'] = os.environ['MAIL_USERNAME']
-    msg['To'] = 'thexeoai@gmail.com'
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(os.environ['MAIL_USERNAME'], os.environ['MAIL_PASSWORD'])
-        smtp.send_message(msg)
+def send_data_to_wordpress(data):
+    headers = {
+        'Authorization': f'Bearer {wp_api_key}',  # Assuming Bearer token authentication
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(
+            wp_api_url, 
+            headers=headers, 
+            json=data
+        )
+        response.raise_for_status()  # Will raise an exception for bad status codes
+        print(f"Data sent to WordPress. Status Code: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"Error sending data to WordPress: {e}")
 
 if __name__ == "__main__":
     create_database_and_table()
     rate = gpu_calculate_rate()
     visitors = fetch_visitors_from_thexeo()
     insert_to_db(rate, visitors)
+    
     conn = mysql.connector.connect(
         host="db",
         user="root",
@@ -114,6 +123,9 @@ if __name__ == "__main__":
     cursor = conn.cursor()
     cursor.execute("SELECT id, workeruser, rate, visitors FROM worker")
     results = cursor.fetchall()
-    send_email(results)
+    
+    # Send data to WordPress instead of emailing
+    send_data_to_wordpress({"data": [dict(zip(['id', 'workeruser', 'rate', 'visitors'], row)) for row in results]})
+    
     cursor.close()
     conn.close()
