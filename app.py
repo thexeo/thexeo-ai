@@ -24,8 +24,8 @@ def gpu_calculate_rate():
     for _ in range(100000):  # Simple loop to simulate GPU usage
         x = x * torch.pi
 
-    # Generate a rate value from this calculation (example)
-    rate = x.item() / 10000000 if x.item() != 0 else 0  # or some other default value
+    # Generate a rate value from this calculation, avoid division by zero or infinity
+    rate = x.item() / 10000000 if x.item() != 0 else 0
     return rate
 
 def fetch_visitors_from_thexeo():
@@ -61,6 +61,13 @@ def create_database():
 
 def insert_to_db(rate, visitors):
     try:
+        # Debugging
+        print(f"Rate: {rate}, Visitors: {visitors}")
+        
+        # Check for infinity or NaN values
+        if rate != rate or rate == float('inf') or rate == float('-inf'):
+            rate = 0  # or some other default value
+
         conn = mysql.connector.connect(
             host="db",
             user="root",
@@ -69,8 +76,7 @@ def insert_to_db(rate, visitors):
         )
         cursor = conn.cursor()
         cursor.execute("INSERT INTO worker (workeruser, rate, visitors) VALUES (%s, %s, %s)", 
-               ('exampleuser', rate, visitors))
-
+                       ('exampleuser', rate, visitors))
         conn.commit()
         print("Data inserted successfully")
     except Error as e:
