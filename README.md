@@ -42,7 +42,6 @@ This project leverages parallel processing with GPU capabilities to efficiently 
    docker-compose build
    docker-compose up -d
 
-
 $ docker ps
 CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS         PORTS                 NAMES
 5286c9738174   thexeo-ai-app   "python app.py"          5 seconds ago   Up 4 seconds                         thexeo-ai-app-1
