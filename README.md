@@ -1,5 +1,14 @@
 # Thexeo AI Project Worker
 
+Thexeo AI Worker Consent Statement
+
+By installing Thexeo AI Worker, you agree to these terms:
+
+No Personal Data: The software does not collect, store, or share personal information. It only connects to the thexeo.com API for functionality and performs web scraping for specific tasks without accessing personal data.
+Privacy Commitment: We respect your privacy and ensure no personal data is compromised during use.
+Internet Requirement: Internet connection is needed to access the thexeo.com API and for web scraping.
+Updates: This statement may be updated; changes will be communicated in new releases or via the software interface.
+
 This project leverages parallel processing with GPU capabilities to efficiently gather and manage data relevant to digital marketing and SEO for our clients.
 
 How to Earn $THEXEO Token Airdrop
