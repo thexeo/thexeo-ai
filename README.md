@@ -83,7 +83,7 @@ Make sure to adjust the specific instructions (like the Git clone URL) to match 
 
 1. **Clone the Repository:**
    ```bash
-   git clone git@github.com:yourusername/thexeo-ai.git
+   git clone git@github.com:thexeoai/thexeo-ai.git
    cd thexeo-ai
    docker-compose up --build
    app-1  | Data inserted successfully Status Code: 200
